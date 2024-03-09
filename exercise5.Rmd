@@ -1,0 +1,78 @@
+---
+title: "Exercise-5"
+author: "Lili Benitez"
+date: "2024-03-09"
+output: html_document
+---
+
+## Exercise 5: Generate Sampling Distributions and CIs
+# Challange 1
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(mosaic)
+f<-"https://raw.githubusercontent.com/difiore/ada-2024-datasets/main/IMDB-movies.csv"
+d<-read_csv(f)
+#filter
+d<-d%>%
+  filter(startYear>=1920, startYear<=1979)%>%
+  filter(runtimeMinutes >= 60,runtimeMinutes <= 180)%>%
+  mutate(
+    decade= case_when(
+      startYear>=1970~"70s",
+        startYear>=1960~"60s", 
+       startYear>=1950~"50s", 
+       startYear>=1940~"40s", 
+         startYear>=1930~"30s", 
+        startYear>=1920~"20s"  
+     ))
+#plot histograms of each
+ggplot(d, aes(x=runtimeMinutes))+
+  geom_histogram()+
+  facet_wrap(~decade)
+sample1<-d%>%
+  group_by(decade)%>%
+   slice_sample( n=100)
+sample1_summary<-d%>%
+  group_by(decade)%>%
+  summarize(
+    mean=mean(runtimeMinutes), 
+    sd=mean(runtimeMinutes), 
+    se=sd/sqrt(sd)
+  )
+
+#calculate actual population mean
+summary<--d%>%
+  group_by(decade)%>%
+  summarize(
+  mean=mean(runtimeMinutes),
+  sd=sd(runtimeMinutes), 
+  se=sd/sqrt(n())
+  )
+
+```
+The estimate means for each decade's run time are pretty similar to the actual ones. 
+```{r}
+library(infer)
+sample<-d%>%
+  group_by(decade)%>%
+  rep_sample_n(size=100 ,reps=10000, replace=FALSE, prob=NULL)%>%
+  mutate(meanRun=mean(runtimeMinutes), sdRun=sd(runtimeMinutes))
+
+summary2<-sample%>%
+  group_by(decade)%>%
+  summarize(n=n(), 
+         mean=mean(runtimeMinutes), 
+         sd=sd(runtimeMinutes))
+
+#plot histogram of sampling distribution
+ggplot(sample, aes(x=runtimeMinutes))+
+  geom_histogram()+
+  facet_wrap(~decade)
+
+```
+I was expecting these to look more normal, and they do relatively, but are still kind of skewed? 
+# Step 10
+The standared error is very low for the actual known population sds, while se for the estimate of the first sample of 100 movies is relatively high. However, if the standard error estimate for the sampling distribution is the sd we calculated, these are very high standard error???? I'm not sure I fully understand taht part. 
+## Challenge 2
