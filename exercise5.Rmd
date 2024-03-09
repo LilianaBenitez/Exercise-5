@@ -43,7 +43,7 @@ sample1_summary<-d%>%
   )
 
 #calculate actual population mean
-summary<--d%>%
+summary<-d%>%
   group_by(decade)%>%
   summarize(
   mean=mean(runtimeMinutes),
@@ -76,3 +76,100 @@ I was expecting these to look more normal, and they do relatively, but are still
 # Step 10
 The standared error is very low for the actual known population sds, while se for the estimate of the first sample of 100 movies is relatively high. However, if the standard error estimate for the sampling distribution is the sd we calculated, these are very high standard error???? I'm not sure I fully understand taht part. 
 ## Challenge 2
+```{r}
+j<-"https://raw.githubusercontent.com/difiore/ada-2024-datasets/main/zombies.csv"
+dat<-read_csv(j)
+dat_summary<-dat%>%
+  summarize(
+    n=n(), 
+    mean_h=mean(height), 
+    mean_w=mean(weight), 
+    mean_age=mean(age), 
+    mean_kill=mean(zombies_killed), 
+    mean_ed=mean(years_of_education),
+    
+    sd_h=sqrt(sum((height-mean(height))^2)/n), 
+    sd_w=sqrt(sum((weight-mean(weight))^2)/n), 
+    sd_age=sqrt(sum((age-mean(age))^2)/n), 
+    sd_kill=sqrt(sum((zombies_killed-mean(zombies_killed))^2)/n),
+    sd_ed=sqrt(sum((years_of_education-mean(years_of_education))^2)/n),
+  ) # are these calculations right??? who knows
+
+```
+# plots
+```{r}
+ggplot(dat, aes(y=height, x=gender))+
+  geom_boxplot()
+
+ggplot(dat, aes(y=weight, x=gender))+
+  geom_boxplot()
+
+ggplot(dat, aes(y=age, x=gender))+
+  geom_boxplot()
+
+ggplot(dat, aes(y=zombies_killed, x=gender))+
+  geom_boxplot()
+
+ggplot(dat, aes(y=years_of_education, x=gender))+
+  geom_boxplot()
+
+ggplot(dat, aes(y=weight, x=age))+
+  geom_point(aes(col=gender))
+ggplot(dat, aes(y=height, x=age))+
+  geom_point(aes(col=gender))
+
+
+```
+Looking at the scatter plots, men tend to have higher weight and height across age categories than women
+# Histograms
+```{r}
+ggplot(dat, aes(x=height))+
+  geom_histogram()
+
+ggplot(dat, aes(x=weight))+
+  geom_histogram()
+
+ggplot(dat, aes(x=age))+
+   geom_histogram()
+
+ggplot(dat, aes(x=zombies_killed))+
+   geom_histogram()
+
+ggplot(dat, aes(x=years_of_education))+
+   geom_histogram()
+```
+Height weight and age seem to be relatively normal, but zombies killed and years of education do not seem to be normally distributed. I don't remember how to do qq plots at the moment
+
+## Sample distribution
+```{r}
+sample<-dat%>%
+   slice_sample( n=50)
+sample_s<-sample%>%
+  summarize(n=n(), 
+         mean_h=mean(height), 
+    mean_w=mean(weight), 
+    mean_age=mean(age), 
+    mean_kill=mean(zombies_killed), 
+    mean_ed=mean(years_of_education),
+     sd_h=sd(height), 
+    sd_w=sd(weight), 
+    sd_age=sd(age), 
+    sd_kill=sd(zombies_killed), 
+    sd_ed=sd(years_of_education), 
+    
+    se_h=sd(height)/sqrt(length(height)), 
+    se_w=sd(weight)/sqrt(length(weight)), 
+    se_age=sd(age)/sqrt(length(age)), 
+    se_kill=sd(zombies_killed)/sqrt(length(zombies_killed)), 
+    se_ed=sd(years_of_education)/sqrt(length(years_of_education)))
+sample_s<-sample_s%>%pivot_longer(cols=mean_h:se_ed)
+#cis<-sample_s%>%
+#  mutate()
+
+# ci assuming normal distribution
+#(percent_ci<-95)
+#(alpha<-1-percent_ci/100) #alpha=0.05
+#(lower<-m+qnorm(alpha/2)*se)
+#(upper<-m+qnorm(1-alpha/2)*se)
+#(ci_norm<-c(lower, upper))
+```
